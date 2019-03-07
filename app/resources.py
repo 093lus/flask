@@ -6,6 +6,8 @@ from app.models import User
 from app.schema import users_schema
 from flask_restful import reqparse
 
+from app.forms import UserForm
+
 parser = reqparse.RequestParser()
 
 
@@ -17,14 +19,20 @@ class UserResource(Resource):
         return jsonify(result.data)
 
     def post(self):
+
         parser.add_argument('name', type=str)
         parser.add_argument('age', type=int)
         parser.add_argument('occupation', type=str)
+
         args = parser.parse_args()
-        user = User(name=args.get("name", ''), age=args.get("age", ''), occupation=args.get("occupation", ''))
-        db.session.add(user)
-        db.session.commit()
-        return 'ok'
+        form = UserForm(name=args.get("name", ''), age=args.get("age", ''), occupation=args.get("occupation", ''))
+        if form.validate():
+            user = User(name=args.get("name", ''), age=args.get("age", ''), occupation=args.get("occupation", ''))
+            db.session.add(user)
+            db.session.commit()
+            return 'ok'
+        else:
+            return "Bad request", 400
 
     def delete(self):
         parser.add_argument('age', type=int)
